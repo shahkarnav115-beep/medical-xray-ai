@@ -1,17 +1,21 @@
-# app/app.py
-
 import sys, os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 import gradio as gr
-from app.gradcam import generate_gradcam    # IMPORT FIXED
+from app.gradcam import generate_gradcam
 
 labels = ["Normal", "Pneumonia"]
 
 def predict(image):
+    # --- FIX 1: HANDLE NONE INPUT ---
+    if image is None:
+        return "No Image", "0.00%", None
+
     image.save("uploaded.jpg")
-    heatmap, pred, confidence = generate_gradcam("uploaded.jpg")
-    return labels[pred], f"{confidence*100:.2f}%", heatmap
+    heatmap_path, pred, confidence = generate_gradcam("uploaded.jpg")
+    
+    # Return the path to the heatmap image for Gradio to display
+    return labels[pred], f"{confidence*100:.2f}%", heatmap_path
 
 ui = gr.Interface(
     fn=predict,
